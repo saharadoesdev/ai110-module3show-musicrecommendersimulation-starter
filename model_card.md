@@ -70,6 +70,9 @@ Prompts:
 - Cases where the system overfits to one preference  
 - Ways the scoring might unintentionally favor some users  
 
+
+_Genre and mood are the main things weighted, so it's not likely for a song outside of the preferred genre or mood to get recommended. The imbalance of songs in the existing .csv file reinforces bubbles, so chill and lofi/pop are more prevalent and more generally more likely to get recommended. Energy currently dominates the weights which can overpower genre intent and mood intent for users with more contradictory profiles. Overall, there is little cross-genre discovery, and the dataset is too small and unevenly dispersed across moods and genres._
+
 ---
 
 ## 7. Evaluation  
@@ -84,6 +87,9 @@ Prompts:
 - Any simple tests or comparisons you ran  
 
 No need for numeric metrics unless you created some.
+
+
+_I evaluated with five different user preference profiles: high energy pop, chill lofi, and deep intense rock, plus two edge case profiles of "sad but max energy" (contradictory) and "genre impossible numeric perfect" (preferred genre is missing from dataset). One example result was the Gym Hero song for the pop profile with preferred mood of happy; even though Gym Hero's mood was intense, it still matched the preferred energy, tempo, and danceability values. The edge case tests showed that changing the weights had a drastic effect on what gets recommended, so the system is very sensitive to how those scoring weights are set up._
 
 ---
 

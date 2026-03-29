@@ -96,10 +96,10 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     Scores a single song against user preferences using points-based algorithm.
     Returns total score (0-7) and list of scoring reasons for transparency.
     
-    Scoring breakdown:
-    - Genre match: +2.0 points (binary)
+    Scoring breakdown (sensitivity experiment):
+    - Genre match: +1.0 points (binary)
     - Mood match: +1.5 points (binary)
-    - Energy similarity: +1.0 × similarity (0-1)
+    - Energy similarity: +2.0 × similarity (0-1)
     - Tempo similarity: +0.5 × similarity (0-1)
     - Valence similarity: +0.5 × similarity (0-1)
     - Danceability similarity: +0.4 × similarity (0-1)
@@ -115,15 +115,33 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     score = 0.0
     reasons = []
     
-    # Genre match (binary): 2.0 points
+    # Active weights (energy-boost experiment)
+    genre_weight = 1.0
+    mood_weight = 1.5
+    energy_weight = 2.0
+    tempo_weight = 0.5
+    valence_weight = 0.5
+    danceability_weight = 0.4
+    acousticness_weight = 0.3
+
+    # Baseline weights (original recipe) for quick swap
+    # genre_weight = 2.0
+    # mood_weight = 1.5
+    # energy_weight = 1.0
+    # tempo_weight = 0.5
+    # valence_weight = 0.5
+    # danceability_weight = 0.4
+    # acousticness_weight = 0.3
+
+    # Genre match (binary)
     if song.get("genre", "").lower() == user_prefs.get("favorite_genre", "").lower():
-        score += 2.0
-        reasons.append("Genre match (+2.0)")
+        score += genre_weight
+        reasons.append(f"Genre match (+{genre_weight:.1f})")
     
-    # Mood match (binary): 1.5 points
+    # Mood match (binary)
     if song.get("mood", "").lower() == user_prefs.get("favorite_mood", "").lower():
-        score += 1.5
-        reasons.append("Mood match (+1.5)")
+        score += mood_weight
+        reasons.append(f"Mood match (+{mood_weight:.1f})")
     
     # Helper function to calculate similarity for continuous features (0-1 normalized)
     def calculate_similarity(target: float, actual: float, range_val: float = 1.0) -> float:
@@ -133,43 +151,43 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
         similarity = max(0.0, 1.0 - abs(target - actual) / range_val)
         return similarity
     
-    # Energy similarity: 1.0 × similarity (range: 0-1)
+    # Energy similarity (range: 0-1)
     target_energy = user_prefs.get("target_energy", 0.5)
     actual_energy = float(song.get("energy", 0.5))
     energy_sim = calculate_similarity(target_energy, actual_energy, range_val=1.0)
-    energy_points = 1.0 * energy_sim
+    energy_points = energy_weight * energy_sim
     score += energy_points
     reasons.append(f"Energy similar ({energy_points:.2f})")
     
-    # Tempo similarity: 0.5 × similarity (range: 60-170 BPM = 110)
+    # Tempo similarity (range: 60-170 BPM = 110)
     target_tempo = user_prefs.get("target_tempo_bpm", 100)
     actual_tempo = float(song.get("tempo_bpm", 100))
     tempo_sim = calculate_similarity(target_tempo, actual_tempo, range_val=110.0)
-    tempo_points = 0.5 * tempo_sim
+    tempo_points = tempo_weight * tempo_sim
     score += tempo_points
     reasons.append(f"Tempo similar ({tempo_points:.2f})")
     
-    # Valence similarity: 0.5 × similarity (range: 0-1)
+    # Valence similarity (range: 0-1)
     target_valence = user_prefs.get("target_valence", 0.5)
     actual_valence = float(song.get("valence", 0.5))
     valence_sim = calculate_similarity(target_valence, actual_valence, range_val=1.0)
-    valence_points = 0.5 * valence_sim
+    valence_points = valence_weight * valence_sim
     score += valence_points
     reasons.append(f"Valence similar ({valence_points:.2f})")
     
-    # Danceability similarity: 0.4 × similarity (range: 0-1)
+    # Danceability similarity (range: 0-1)
     target_danceability = user_prefs.get("target_danceability", 0.5)
     actual_danceability = float(song.get("danceability", 0.5))
     danceability_sim = calculate_similarity(target_danceability, actual_danceability, range_val=1.0)
-    danceability_points = 0.4 * danceability_sim
+    danceability_points = danceability_weight * danceability_sim
     score += danceability_points
     reasons.append(f"Danceability similar ({danceability_points:.2f})")
     
-    # Acousticness similarity: 0.3 × similarity (range: 0-1)
+    # Acousticness similarity (range: 0-1)
     target_acousticness = user_prefs.get("target_acousticness", 0.5)
     actual_acousticness = float(song.get("acousticness", 0.5))
     acousticness_sim = calculate_similarity(target_acousticness, actual_acousticness, range_val=1.0)
-    acousticness_points = 0.3 * acousticness_sim
+    acousticness_points = acousticness_weight * acousticness_sim
     score += acousticness_points
     reasons.append(f"Acousticness similar ({acousticness_points:.2f})")
     
