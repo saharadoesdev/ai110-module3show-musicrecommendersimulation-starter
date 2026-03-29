@@ -16,7 +16,17 @@ def main() -> None:
     songs = load_songs("data/songs.csv") 
 
     # Starter example profile
-    user_prefs = {"genre": "pop", "mood": "happy", "energy": 0.8}
+    # user_prefs = {"genre": "pop", "mood": "happy", "energy": 0.8}
+    # Test profile aligned with score_song expected keys
+    user_prefs = {
+        "favorite_genre": "lofi",
+        "favorite_mood": "chill",
+        "target_energy": 0.38,
+        "target_tempo_bpm": 76,
+        "target_valence": 0.58,
+        "target_danceability": 0.60,
+        "target_acousticness": 0.80,
+    }
 
     recommendations = recommend_songs(user_prefs, songs, k=5)
 
